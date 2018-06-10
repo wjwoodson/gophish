@@ -47,7 +47,14 @@
             {{template "flashes" .Flashes}}
             <input type="text" name="username" class="form-control top-input" placeholder="Username" required autofocus/>
             <input type="password" name="password" class="form-control middle-input" placeholder="Password" autocomplete="off" required/>
-            <input type="password" name="confirm_password" class="form-control bottom-input" placeholder="Confirm Password" autocomplete="off" required/>
+            <input type="password" name="confirm_password" class="form-control middle-input" placeholder="Confirm Password" autocomplete="off" required/>
+            <select name="role" class="form-control bottom-input" autocomplete="off"/>
+                <option value="" selected disabled hidden>User Role</option>
+                <option value="CampaignAuditor">Campaign Auditor</option>
+                <option value="CampaignAdmin">Campaign Admin</option>
+                <option value="GlobalAuditor">Global Auditor</option>
+                <option value="GlobalAdmin">Global Admin</option>
+            </select>
             <input type="hidden" name="csrf_token" value="{{.Token}}"/>
             <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
         </form>

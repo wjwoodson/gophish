@@ -6,6 +6,15 @@ type User struct {
 	Username string `json:"username" sql:"not null;unique"`
 	Hash     string `json:"-"`
 	ApiKey   string `json:"api_key" sql:"not null;unique"`
+  Role     string `json:"role" sql:"not null"`
+}
+
+// GetUsers returns all admin users. If no users are found, an
+// error is thrown.
+func GetUsers() ([]User, error) {
+	us := []User{}
+	err := db.Find(&us).Error
+	return us, err
 }
 
 // GetUser returns the user that the given id corresponds to. If no user is found, an
@@ -35,5 +44,11 @@ func GetUserByUsername(username string) (User, error) {
 // PutUser updates the given user
 func PutUser(u *User) error {
 	err := db.Save(u).Error
+	return err
+}
+
+// DeleteUser deletes the given user
+func DeleteUser(u *User) error {
+	err := db.Delete(u).Error
 	return err
 }

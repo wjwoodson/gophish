@@ -45,6 +45,9 @@ var ErrPasswordMismatch = errors.New("Passwords must match")
 // ErrUsernameTaken is thrown when a user attempts to register a username that is taken.
 var ErrUsernameTaken = errors.New("Username already taken")
 
+// ErrInvalidRole is thrown when a user attempts to register with an invalid role.
+var ErrInvalidRole = errors.New("Invalid Role")
+
 // Login attempts to login the user given a request.
 func Login(r *http.Request) (bool, models.User, error) {
 	username, password := r.FormValue("username"), r.FormValue("password")
@@ -66,6 +69,7 @@ func Register(r *http.Request) (bool, error) {
 	username := r.FormValue("username")
 	newPassword := r.FormValue("password")
 	confirmPassword := r.FormValue("confirm_password")
+  role := r.FormValue("role")
 	u, err := models.GetUserByUsername(username)
 	// If the given username already exists, throw an error and return false
 	if err == nil {
@@ -93,9 +97,21 @@ func Register(r *http.Request) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+  // Check role for the new user
+  switch role {
+  case
+    "GlobalAdmin",
+    "GlobalAuditor",
+    "CampaignAdmin",
+    "CampaignAuditor":
+  default:
+    return false, ErrInvalidRole
+  }
+
 	u.Username = username
 	u.Hash = string(h)
 	u.ApiKey = GenerateSecureKey()
+  u.Role = role
 	err = models.PutUser(&u)
 	return true, nil
 }
