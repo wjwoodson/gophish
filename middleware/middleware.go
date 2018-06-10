@@ -45,7 +45,7 @@ func GetContext(handler http.Handler) http.HandlerFunc {
 		// reuse the values in different handlers
 		r = ctx.Set(r, "session", session)
 		if id, ok := session.Values["id"]; ok {
-			u, err := models.GetUser(id.(int64))
+			u, err := models.GetUser(id.(int64), id.(int64))
 			if err != nil {
 				r = ctx.Set(r, "user", nil)
 			} else {

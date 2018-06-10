@@ -66,6 +66,7 @@ func Login(r *http.Request) (bool, models.User, error) {
 
 // Register attempts to register the user given a request.
 func Register(r *http.Request) (bool, error) {
+
 	username := r.FormValue("username")
 	newPassword := r.FormValue("password")
 	confirmPassword := r.FormValue("confirm_password")

@@ -1,5 +1,10 @@
 package models
 
+import (
+
+  log "github.com/gophish/gophish/logger"
+)
+
 // User represents the user model for gophish.
 type User struct {
 	Id       int64  `json:"id"`
@@ -9,17 +14,9 @@ type User struct {
   Role     string `json:"role" sql:"not null"`
 }
 
-// GetUsers returns all admin users. If no users are found, an
-// error is thrown.
-func GetUsers() ([]User, error) {
-	us := []User{}
-	err := db.Find(&us).Error
-	return us, err
-}
-
 // GetUser returns the user that the given id corresponds to. If no user is found, an
 // error is thrown.
-func GetUser(id int64) (User, error) {
+func GetUser(id int64, uid int64) (User, error) {
 	u := User{}
 	err := db.Where("id=?", id).First(&u).Error
 	return u, err
@@ -39,6 +36,22 @@ func GetUserByUsername(username string) (User, error) {
 	u := User{}
 	err := db.Where("username = ?", username).First(&u).Error
 	return u, err
+}
+
+// GetUsers returns all admin users. If no users are found, an
+// error is thrown.
+func GetUsers(uid int64) ([]User, error) {
+
+  // check if the calling user is allowed to perform this action
+
+	us := []User{}
+	err := db.Find(&us).Error
+  if err != nil {
+    log.Error(err)
+    return us, err
+  }
+
+	return us, nil
 }
 
 // PutUser updates the given user

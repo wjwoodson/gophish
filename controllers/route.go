@@ -33,6 +33,7 @@ func CreateAdminRouter() http.Handler {
 	router.HandleFunc("/sending_profiles", Use(SendingProfiles, mid.RequireLogin))
 	router.HandleFunc("/register", Use(Register, mid.RequireLogin))
 	router.HandleFunc("/settings", Use(Settings, mid.RequireLogin))
+	router.HandleFunc("/admin/users", Use(Admin_Users, mid.RequireLogin))
 	// Create the API routes
 	api := router.PathPrefix("/api").Subrouter()
 	api = api.StrictSlash(true)
@@ -58,6 +59,8 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/import/group", Use(API_Import_Group, mid.RequireAPIKey))
 	api.HandleFunc("/import/email", Use(API_Import_Email, mid.RequireAPIKey))
 	api.HandleFunc("/import/site", Use(API_Import_Site, mid.RequireAPIKey))
+	api.HandleFunc("/admin/users/", Use(API_Admin_Users, mid.RequireAPIKey))
+	api.HandleFunc("/admin/users/{id:[0-9]+}", Use(API_Admin_Users_Id, mid.RequireAPIKey))
 
 	// Setup static file serving
 	router.PathPrefix("/").Handler(http.FileServer(UnindexedFileSystem{http.Dir("./static/")}))
@@ -77,6 +80,82 @@ func Use(handler http.HandlerFunc, mid ...func(http.Handler) http.HandlerFunc) h
 		handler = m(handler)
 	}
 	return handler
+}
+
+// /admin/users manages existing users
+func Admin_Users(w http.ResponseWriter, r *http.Request) {
+	// If it is a post request, attempt to register the account
+	// Now that we are all registered, we can log the user in
+	params := struct {
+		Title   string
+		Flashes []interface{}
+		User    models.User
+		Token   string
+	}{Title: "Manage Users", Token: csrf.Token(r)}
+	session := ctx.Get(r, "session").(*sessions.Session)
+	switch {
+	case r.Method == "GET":
+    //List gophish users
+		params.Flashes = session.Flashes()
+		session.Save(r, w)
+		templates := template.New("template")
+		_, err := templates.ParseFiles("templates/register.html", "templates/flashes.html")
+		if err != nil {
+			log.Error(err)
+		}
+		template.Must(templates, err).ExecuteTemplate(w, "base", params)
+	case r.Method == "PUT":
+		//Attempt to modify an existing gophish user
+		succ, err := auth.Register(r)
+		//If we've registered, redirect to the login page
+		if succ {
+			Flash(w, r, "success", "Registration successful!")
+			session.Save(r, w)
+			http.Redirect(w, r, "/login", 302)
+			return
+		}
+		// Check the error
+		m := err.Error()
+		log.Error(err)
+		Flash(w, r, "danger", m)
+		session.Save(r, w)
+		http.Redirect(w, r, "/register", 302)
+		return
+	case r.Method == "POST":
+		//Attempt to create a new gophish user
+		succ, err := auth.Register(r)
+		//If we've registered, redirect to the login page
+		if succ {
+			Flash(w, r, "success", "Registration successful!")
+			session.Save(r, w)
+			http.Redirect(w, r, "/login", 302)
+			return
+		}
+		// Check the error
+		m := err.Error()
+		log.Error(err)
+		Flash(w, r, "danger", m)
+		session.Save(r, w)
+		http.Redirect(w, r, "/register", 302)
+		return
+	case r.Method == "DELETE":
+    //Attempt to delete an existing gophish user
+		succ, err := auth.Register(r)
+		//If we've registered, redirect to the login page
+		if succ {
+			Flash(w, r, "success", "Registration successful!")
+			session.Save(r, w)
+			http.Redirect(w, r, "/login", 302)
+			return
+		}
+		// Check the error
+		m := err.Error()
+		log.Error(err)
+		Flash(w, r, "danger", m)
+		session.Save(r, w)
+		http.Redirect(w, r, "/register", 302)
+		return
+	}
 }
 
 // Register creates a new user

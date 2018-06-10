@@ -46,6 +46,32 @@ func API(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// API (/api/admin/users) gets all gophish users
+func API_Admin_Users(w http.ResponseWriter, r *http.Request) {
+	switch {
+	case r.Method == "GET":
+    us, err := models.GetUsers(ctx.Get(r, "user_id").(int64))
+		if err != nil {
+      log.Error(err)
+    }
+		JSONResponse(w, us, http.StatusOK)
+  }
+}
+
+// API (/api/admin/users/[0-9]+) manages a specific user
+func API_Admin_Users_Id(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	switch {
+	case r.Method == "GET":
+    u, err := models.GetUser(id,ctx.Get(r, "user_id").(int64))
+		if err != nil {
+			log.Error(err)
+		}
+		JSONResponse(w, u, http.StatusOK)
+	}
+}
+
 // API (/api/reset) resets a user's API key
 func API_Reset(w http.ResponseWriter, r *http.Request) {
 	switch {
